@@ -23,7 +23,7 @@ if (isset($_GET['cat'])) {
     <meta charset="UTF-8">
     <title>Basir Docs</title>
      <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-    <script src="assets/js/script.js"></script>
+    <script src="script.js"></script>
     <style>
 .scrollbar-hide::-webkit-scrollbar {
     display: none;
