@@ -32,6 +32,17 @@ if (isset($_GET['cat'])) {
     -ms-overflow-style: none;
     scrollbar-width: none;
 }
+
+.fade-out {
+    opacity: 0;
+    transition: opacity 0.25s ease;
+}
+
+.fade-in {
+    opacity: 1;
+    transition: opacity 0.25s ease;
+}
+
 </style>
 
 </head>
@@ -66,6 +77,12 @@ if (isset($_GET['cat'])) {
         </a>
     <?php endforeach; ?>
     <a href="add.php">Input</a>
+    <button
+    id="viewToggleBtn"
+    class="text-sm px-3 py-1 bg-white text-blue-600 rounded shadow"
+>
+    Visual View
+</button>
     </div>
 </header>
 
@@ -108,6 +125,7 @@ if (isset($_GET['cat'])) {
     © <?= date('Y') ?> Basir Docs. All rights reserved.
 </footer>
 <script>
+/* ================= CATEGORY BAR DRAG ================= */
 const slider = document.getElementById('categoryBar');
 
 let isDown = false;
@@ -116,29 +134,71 @@ let scrollLeft;
 
 slider.addEventListener('mousedown', (e) => {
     isDown = true;
-    slider.classList.add('active');
     startX = e.pageX - slider.offsetLeft;
     scrollLeft = slider.scrollLeft;
 });
 
-slider.addEventListener('mouseleave', () => {
-    isDown = false;
-    slider.classList.remove('active');
-});
-
-slider.addEventListener('mouseup', () => {
-    isDown = false;
-    slider.classList.remove('active');
-});
+slider.addEventListener('mouseleave', () => isDown = false);
+slider.addEventListener('mouseup', () => isDown = false);
 
 slider.addEventListener('mousemove', (e) => {
     if (!isDown) return;
     e.preventDefault();
     const x = e.pageX - slider.offsetLeft;
-    const walk = (x - startX) * 1.5; // scroll speed
+    const walk = (x - startX) * 1.5;
     slider.scrollLeft = scrollLeft - walk;
 });
+
+
+/* ================= VIEW TOGGLE + CONTENT LOAD ================= */
+
+let currentView = 'origin';   // origin | canvas
+let activeMenuId = null;
+
+const btn = document.getElementById('viewToggleBtn');
+const contentBox = document.getElementById('mainContent');
+
+/* ---- Toggle Button ---- */
+btn.addEventListener('click', () => {
+
+    currentView = currentView === 'origin'
+        ? 'canvas'
+        : 'origin';
+
+    btn.textContent =
+        currentView === 'origin'
+            ? 'Visual View'
+            : 'Origin View';
+
+    if (activeMenuId) {
+        loadContent(activeMenuId);
+    }
+});
+
+/* ---- Load Content (THIS IS THE FUNCTION) ---- */
+function loadContent(id) {
+    activeMenuId = id;
+
+    contentBox.classList.add('fade-out');
+
+    setTimeout(() => {
+        fetch(`get_content.php?id=${id}&view=${currentView}`)
+            .then(res => res.text())
+            .then(html => {
+
+                contentBox.innerHTML = html;
+
+                contentBox.classList.remove('fade-out');
+                contentBox.classList.add('fade-in');
+
+                setTimeout(() => {
+                    contentBox.classList.remove('fade-in');
+                }, 300);
+            });
+    }, 200);
+}
 </script>
+
 
 </body>
 </html>

@@ -121,7 +121,7 @@ if ($mode === 'edit' && $button_id) {
 
             <!-- FREE POSITION CANVAS -->
             <div id="dropZone"
-                 class="relative min-h-[500px] border-2 border-dashed bg-gray-50 mb-6">
+               class="relative min-h-[500px] border-2 border-dashed bg-gray-50 overflow-auto">
             </div>
 
             <button class="bg-blue-600 text-white px-4 py-2 rounded">
@@ -153,10 +153,14 @@ dropZone.addEventListener('drop', e => {
     e.preventDefault();
 
     const type = e.dataTransfer.getData("type");
+    const rect = dropZone.getBoundingClientRect();
+
+    const left = e.clientX - rect.left;
+    const top  = e.clientY - rect.top;
 
     const base = {
-        left: 20,
-        top: 20,
+        left: Math.max(0, left),
+        top: Math.max(0, top),
         width: 300,
         height: 150
     };
@@ -179,6 +183,7 @@ dropZone.addEventListener('drop', e => {
 
     render();
 });
+
 
 /* ================= IMAGE HANDLER ================= */
 function handleImageSelect(e, index){
@@ -311,6 +316,22 @@ ${html}
     });
 }
 
+
+
+function adjustCanvasHeight() {
+    let maxBottom = 0;
+
+    content.forEach(b => {
+        const bottom = b.style.top + b.style.height;
+        if (bottom > maxBottom) {
+            maxBottom = bottom;
+        }
+    });
+
+    // extra space for comfort
+    dropZone.style.height = Math.max(500, maxBottom + 100) + 'px';
+}
+
 /* ================= REMOVE ================= */
 function removeBlock(i){
     if(confirm('Remove this element?')){
@@ -370,6 +391,17 @@ categorySelect.addEventListener('change', function () {
             });
         });
 });
+
+function getSafeTop() {
+    if(content.length === 0) return 20;
+
+    let max = 0;
+    content.forEach(b => {
+        max = Math.max(max, b.style.top + b.style.height);
+    });
+
+    return max + 20;
+}
 
 </script>
 

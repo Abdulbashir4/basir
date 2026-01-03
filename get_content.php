@@ -1,7 +1,8 @@
 <?php
 require_once 'config.php';
 
-$id = (int)($_GET['id'] ?? 0);
+$id   = (int)($_GET['id'] ?? 0);
+$view = $_GET['view'] ?? 'origin'; // origin | canvas
 
 $row = $conn->query(
     "SELECT title, description FROM menu_items WHERE id=$id"
@@ -15,11 +16,39 @@ if (!$row) {
 $content = json_decode($row['description'], true) ?? [];
 ?>
 
+<?php if ($view === 'origin'): ?>
+<!-- ================= ORIGIN VIEW ================= -->
+
+<div class="space-y-4">
+
+    <h1 class="text-2xl font-bold">
+        <?= htmlspecialchars($row['title']) ?>
+    </h1>
+
+    <?php foreach ($content as $block): ?>
+
+        <?php if ($block['type'] === 'text'): ?>
+            <p class="text-gray-700 leading-relaxed">
+                <?= nl2br(htmlspecialchars($block['value'])) ?>
+            </p>
+        <?php endif; ?>
+
+        <?php if ($block['type'] === 'image'): ?>
+            <img src="uploads/<?= htmlspecialchars($block['value']) ?>"
+                 class="w-full rounded shadow border">
+        <?php endif; ?>
+
+    <?php endforeach; ?>
+
+</div>
+
+<?php else: ?>
+<!-- ================= CANVAS VIEW ================= -->
+
 <h1 class="text-2xl font-bold mb-4">
     <?= htmlspecialchars($row['title']) ?>
 </h1>
 
-<!-- CANVAS -->
 <div style="
     position: relative;
     min-height: 600px;
@@ -37,7 +66,6 @@ $content = json_decode($row['description'], true) ?? [];
         $height = (int)($style['height'] ?? 150);
     ?>
 
-    <!-- TEXT BLOCK -->
     <?php if ($block['type'] === 'text'): ?>
         <div style="
             position:absolute;
@@ -51,7 +79,6 @@ $content = json_decode($row['description'], true) ?? [];
         </div>
     <?php endif; ?>
 
-    <!-- IMAGE BLOCK -->
     <?php if ($block['type'] === 'image'): ?>
         <div style="
             position:absolute;
@@ -60,17 +87,13 @@ $content = json_decode($row['description'], true) ?? [];
             width:<?= $width ?>px;
             height:<?= $height ?>px;
         ">
-            <img
-                src="uploads/<?= htmlspecialchars($block['value']) ?>"
-                style="
-                    width:100%;
-                    height:100%;
-                    object-fit:contain;
-                "
-            >
+            <img src="uploads/<?= htmlspecialchars($block['value']) ?>"
+                 style="width:100%; height:100%; object-fit:contain;">
         </div>
     <?php endif; ?>
 
 <?php endforeach; ?>
 
 </div>
+
+<?php endif; ?>

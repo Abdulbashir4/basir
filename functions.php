@@ -1,49 +1,33 @@
-<?php function renderMenu($parent_id = NULL, $category_id = NULL) {
+<?php function renderMenu($parent_id = null, $cat_id) {
     global $conn;
 
-    if (!$category_id) return;
+    $sql = "SELECT * FROM menu_items 
+            WHERE parent_id ".($parent_id ? "= $parent_id" : "IS NULL")."
+            AND category_id = $cat_id
+            ORDER BY id";
 
-    $sql = is_null($parent_id)
-        ? "SELECT * FROM menu_items
-           WHERE parent_id IS NULL AND category_id=$category_id"
-        : "SELECT * FROM menu_items
-           WHERE parent_id=$parent_id AND category_id=$category_id";
+    $items = $conn->query($sql);
 
-    $items = $conn->query($sql)->fetchAll(PDO::FETCH_ASSOC);
+    if ($items->rowCount() > 0) {
+        echo "<ul class='space-y-1 pl-2'>";
 
-    if ($items) {
-        echo "<ul class='ml-4 space-y-1'>";
         foreach ($items as $item) {
-
-            $hasChild = $conn->query(
-                "SELECT id FROM menu_items
-                 WHERE parent_id={$item['id']} AND category_id=$category_id
-                 LIMIT 1"
-            )->rowCount() > 0;
-
             echo "<li>";
-            echo "<div onclick='loadContent({$item['id']})' class='flex justify-between px-2 py-1 hover:bg-gray-100 border border-black rounded'>";
 
-            echo "<span 
-                  class='cursor-pointer'>
-                  {$item['title']}
-                  </span>";
+            echo "<a href='#'
+                    class='block px-2 py-1 rounded hover:bg-gray-100 border border-black px-2 py-1 mb-2'
+                    onclick='loadContent({$item['id']}); return false;'>
+                    ".htmlspecialchars($item['title'])."
+                  </a>";
 
-            if ($hasChild) {
-                echo "<span onclick='toggle(this)'>▶</span>";
-            }
-
-            echo "</div>";
-
-            if ($hasChild) {
-                echo "<div class='hidden mt-2'>";
-                renderMenu($item['id'], $category_id);
-                echo "</div>";
-            }
+            // recursive call for sub menu
+            renderMenu($item['id'], $cat_id);
 
             echo "</li>";
         }
+
         echo "</ul>";
     }
 }
+
 ?>
