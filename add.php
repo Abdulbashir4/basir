@@ -120,9 +120,13 @@ if ($mode === 'edit' && $button_id) {
 
 
             <!-- FREE POSITION CANVAS -->
-            <div id="dropZone"
-               class="relative min-h-[500px] border-2 border-dashed bg-gray-50 overflow-auto">
+            <div class="flex justify-center">
+                <div id="dropZone"
+                    class="relative w-[1050px] bg-white border shadow
+                            min-h-[600px] overflow-hidden">
+                </div>
             </div>
+                    
 
             <button class="bg-blue-600 text-white px-4 py-2 rounded">
                 <?= $mode === 'edit' ? 'Update Button' : 'Save Button' ?>
@@ -155,15 +159,20 @@ dropZone.addEventListener('drop', e => {
     const type = e.dataTransfer.getData("type");
     const rect = dropZone.getBoundingClientRect();
 
-    const left = e.clientX - rect.left;
-    const top  = e.clientY - rect.top;
+    let left = e.clientX - rect.left;
+let top  = e.clientY - rect.top;
+
+left = clamp(left, 0, dropZone.clientWidth - 300);
+top  = Math.max(20, top);
+
 
     const base = {
-        left: Math.max(0, left),
-        top: Math.max(0, top),
-        width: 300,
-        height: 150
-    };
+    left: 50,
+    top: getSafeTop(),
+    width: 300,
+    height: 150
+};
+
 
     if(type === 'text'){
         content.push({
@@ -281,9 +290,23 @@ ${html}
             offsetY = e.clientY - b.style.top;
 
             document.onmousemove = e => {
-                b.style.left = e.clientX - offsetX;
-                b.style.top  = e.clientY - offsetY;
-                render();
+                let newLeft = e.clientX - offsetX;
+let newTop  = e.clientY - offsetY;
+
+newLeft = clamp(
+    newLeft,
+    0,
+    dropZone.clientWidth - b.style.width
+);
+
+newTop = Math.max(20, newTop);
+
+b.style.left = newLeft;
+b.style.top  = newTop;
+
+adjustCanvasHeight();
+render();
+
             };
 
             document.onmouseup = () => {
@@ -302,9 +325,17 @@ ${html}
             const startH = b.style.height;
 
             document.onmousemove = e => {
-                b.style.width  = Math.max(50, startW + (e.clientX - startX));
-                b.style.height = Math.max(50, startH + (e.clientY - startY));
-                render();
+                b.style.width = clamp(
+    startW + (e.clientX - startX),
+    50,
+    dropZone.clientWidth - b.style.left
+);
+
+b.style.height = Math.max(50, startH + (e.clientY - startY));
+
+adjustCanvasHeight();
+render();
+
             };
 
             document.onmouseup = () => {
@@ -323,14 +354,13 @@ function adjustCanvasHeight() {
 
     content.forEach(b => {
         const bottom = b.style.top + b.style.height;
-        if (bottom > maxBottom) {
-            maxBottom = bottom;
-        }
+        if (bottom > maxBottom) maxBottom = bottom;
     });
 
-    // extra space for comfort
-    dropZone.style.height = Math.max(500, maxBottom + 100) + 'px';
+    dropZone.style.height =
+        Math.max(600, maxBottom + 100) + 'px';
 }
+
 
 /* ================= REMOVE ================= */
 function removeBlock(i){
@@ -401,6 +431,9 @@ function getSafeTop() {
     });
 
     return max + 20;
+}
+function clamp(val, min, max) {
+    return Math.max(min, Math.min(max, val));
 }
 
 </script>
