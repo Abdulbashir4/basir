@@ -105,7 +105,7 @@ if (isset($_GET['cat'])) {
     <!-- ===== CONTENT AREA ===== -->
     <main class="flex-1 overflow-y-auto p-8">
         <div id="mainContent"
-             class="bg-white rounded-lg shadow p-6 min-h-[300px]">
+             class="p-6 h-screen">
 
             <h1 class="text-2xl font-bold text-gray-800 mb-2">
                 Welcome 👋

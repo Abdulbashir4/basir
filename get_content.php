@@ -53,7 +53,6 @@ $content = json_decode($row['description'], true) ?? [];
     position: relative;
     min-height: 600px;
     width: 100%;
-    background: #fff;
 ">
 
 <?php foreach ($content as $block): ?>
